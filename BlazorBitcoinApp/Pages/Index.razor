@@ -8,6 +8,23 @@
 <PageTitle>BlazorBitcoin</PageTitle>
 
 <h1>Valor de fechamento BITCOIN por dia</h1>
+<div>
+    <label for="dayFilter">Data Inicial</label>
+    <input id="dayFilter" type="date" class="from-control" value="@startdDate.ToString("yyyy-MM-dd")"
+           min="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" max="@DateTime.Now.ToString("yyyy-MM-dd")" 
+           @onchange="@(async (e) => await ChangeDay(DateTime.Parse(e.Value.ToString())))" />
+</div>
+
+@if(foreCasts == null || foreCasts.Count == 0)
+{
+    <p>Carregando...</p>
+}
+else
+{
+    <div style="margin: 10px">
+        <PlotlyChart style="height: 30%;" @bind-Config="config" @bind-Layout="layout" @bind-Data="data" @ref="chart"/>
+    </div>
+}
 
 @code {
     private List<BitcoinDataDTO> foreCasts;
