@@ -11,7 +11,7 @@
 
 @code {
     private List<BitcoinDataDTO> foreCasts;
-    private DateTime stardDate;
+    private DateTime startdDate;
 
     PlotlyChart chart;
     Config config = new Config()
@@ -58,5 +58,21 @@
             }
         };
         StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        yAxisMax = 60000;
+        startdDate = DateTime.Now.AddDays(-7);
+        foreCasts = await BitcoinService.FindByDate(startdDate);
+        await LoadChartData();
+    }
+
+    private async Task ChangeDay(DateTime startDateChanged)
+    {
+        startdDate = startDateChanged;
+        foreCasts = await BitcoinService.FindByDate(startdDate);
+        await LoadChartData();
+        await chart.React();
     }
 }
