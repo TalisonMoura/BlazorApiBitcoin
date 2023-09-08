@@ -1,9 +1,62 @@
 ﻿@page "/"
+@using BlazorBitcoinApp.Dtos
+@using Plotly.Blazor;
+@using Plotly.Blazor.Traces;
 
-<PageTitle>Index</PageTitle>
+@inject Services.IBitcoinService BitcoinService;
 
-<h1>Hello, world!</h1>
+<PageTitle>BlazorBitcoin</PageTitle>
 
-Welcome to your new app.
+<h1>Valor de fechamento BITCOIN por dia</h1>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    private List<BitcoinDataDTO> foreCasts;
+    private DateTime stardDate;
+
+    PlotlyChart chart;
+    Config config = new Config()
+        {
+            Responsive = true
+        };
+
+    Layout layout;
+    decimal yAxisMax;
+    IList<ITrace> data = new List<ITrace>();
+
+    private async Task LoadChartData()
+    {
+        if (foreCasts.Count > 0)
+        {
+            var currentCloseValueMax = (decimal)foreCasts.Max(f => f.CloseValue);
+            if (currentCloseValueMax > yAxisMax)
+                yAxisMax = Convert.ToInt64(currentCloseValueMax + (currentCloseValueMax * 0.3m));
+        }
+        data = new List<ITrace>
+        {
+            new Scatter
+            {
+                Name = "ScatterTrace",
+                Mode = Plotly.Blazor.Traces.ScatterLib.ModeFlag.Lines | Plotly.Blazor.Traces.ScatterLib.ModeFlag.Markers,
+                XAxis = "Dia",
+                YAxis = "Fechamento",
+                X = foreCasts.Select(f => (object)f.Day.ToString("dd/MM/yyyy")).ToList(),
+                Y = foreCasts.Select(f => (object)f.CloseValue).ToList()
+            }
+        };
+        layout = new Layout()
+        {
+            Margin = new Plotly.Blazor.LayoutLib.Margin()
+            {
+                Pad = 10
+            },
+            YAxis = new List<Plotly.Blazor.LayoutLib.YAxis>()
+            {
+                new Plotly.Blazor.LayoutLib.YAxis()
+                {
+                    Range = new List<object> { 0, yAxisMax },
+                }
+            }
+        };
+        StateHasChanged();
+    }
+}
